@@ -20,13 +20,13 @@
     { domain = "@users"; item = "nproc";  type = "hard"; value = "8192"; }
   ];
   security.virtualisation.flushL1DataCache = "always";
+  # security.lockKernelModules = true; note: think more about this? how nixos handles kernel modules during rebuilds...
   
   # memory allocator
   environment.memoryAllocator.provider = "scudo";
-  environment.variables.SCUDO_OPTIONS = "ZeroContents=1";
+  environment.variables.SCUDO_OPTIONS = ""; # fails without this for some reason?
   
   # auditd
-  services.auditd.enable = true;
   security.audit.enable = true;
   security.audit.rules = [
     "-a exit,always -F arch=b64 -S execve"         # log all executed commands

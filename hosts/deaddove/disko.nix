@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ ... }:
 {
   disko.devices = {
     disk = {
@@ -57,10 +57,17 @@
             header = {
               size = "512M";
               content = {
-                type = "filesystem";
-                format = "ext4";
-                mountpoint = "/boot/luks-header";
-                extraArgs = [ "-L" "NIXHEADER" ];
+                type = "luks";
+                name = "luks-header";
+                settings = {
+                  allowDiscards = false;
+                };
+                content = {
+                  type = "filesystem";
+                  format = "ext4";
+                  mountpoint = "/boot/luks-header";
+                  extraArgs = [ "-L" "NIXHEADER" ];
+                };
               };
             };
           };

@@ -1,5 +1,5 @@
 {
-  description = "paranoia nixos config";
+  description = "project pyria; highly paranoid nixos config";
 
   inputs = {
     nixpkgs = {

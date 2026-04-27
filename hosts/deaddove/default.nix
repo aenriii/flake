@@ -22,6 +22,7 @@
     ../../modules/security/sops.nix
     ../../modules/security/apparmor/hardened.nix
     ../../modules/security/hardened.nix
+    ../../modules/security/fido2.nix
     # specializations
     ../../modules/specializations/gaming.nix
     # users

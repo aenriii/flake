@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ ... }:
 {
   boot.initrd.systemd.enable = true;
   boot.initrd.kernelModules = [ "btrfs" ];

@@ -12,8 +12,5 @@
     "kernel.perf_event_paranoid" = 3;
     "kernel.yama.ptrace_scope" = 3;
     "kernel.unprivileged_bpf_disabled" = 1;
-    "kernel.modules_disabled" = 1;
-  };
-  security.forcePageTableIsolation = true;
-  
+  };  
 }
