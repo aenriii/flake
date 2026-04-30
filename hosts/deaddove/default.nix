@@ -8,7 +8,6 @@
     # boot stages / security
     ../../modules/boot/lanzaboote.nix
     ../../modules/boot/luks/paranoid.nix
-    ../../modules/boot/lockout.nix
     # persistence
     ../../modules/persistence/impermanence.nix
     # network security
@@ -36,7 +35,7 @@
   nix.settings.allowed-users = [ "aenri" ];
   nix.gc = { automatic = true; dates = "weekly"; options = "--delete-older-than 30d"; };
   nix.optimise.automatic = true;
-
+  
   networking.hostName = "deaddove";
   time.timeZone = "America/Indiana/Indianapolis";
   system.stateVersion = "25.05";
