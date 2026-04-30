@@ -324,4 +324,204 @@ are often ripe with CVEs, and have a large attack surface
 
 ## page 3: hardening userspace
 
-we also put a lot of work into hardening userspace. 
+we also put a lot of work into hardening userspace. this section & userspace
+hardening overall is a work in progress, but we've made tremendous progress so
+far.
+
+### general hardening
+
+#### swap `sudo` for `sudo-rs`
+
+reduces the attack surface of the most widely used `setuid` binary by replacing
+it with a rust alternative. we #love #rust!
+
+#### FIDO2 key support is integrated into userspace
+
+fairly simple, really, its probably best that your passkeys are stored on an
+uncloneable device.
+
+#### usbguard + usb killswitch is implemented
+
+firstly, a udev rule monitors the device which holds your nixos partition's
+header, a block device named `NIXHEADER`. if that device is physically removed,
+your system immediately discards the decryption keys and forces a shutdown.
+
+we also have usbguard enabled in block-first mode. currently, all usb devices
+other than human-interface devices such as a keyboard and mouse are blocked 
+immediately. this stops various attempts at physical access based attacks.
+
+### systemd hardening
+
+#### core dumps are disabled.
+
+this prevents any form of data leak which happens by virtue of eating the data
+contained in a core dump.
+
+#### emergency mode is disabled
+
+this makes the system a little less stable, but it is well worth it. an attacker
+cannot simply gain a root shell on your system by just making the boot process
+crash anymore, however this does mean that system recovery becomes a severe
+headache if worst comes to worst.
+
+#### **(todo)** every included systemd service is hardened
+
+we are going to take a fresh install, look at all the systemd services, and
+add a basic hardening template to each of them. this means that those services
+are less vulnerable, but you should always check this for yourself *and* add
+hardening configurations to any services you install.
+
+### nix (daemon) hardening
+
+#### all derivations are sandboxed
+
+we enable `nix.settings.sandbox` in order to assure that no derivations can
+peek into the currently running system. this ensures that no derivation can
+do things such as read files outside the sandbox or access the network during
+compilation.
+
+### package signatures are enforced
+
+all packages downloaded from the nixos cache have their signature verified
+on-device, this prevents threat actors from simply replacing the package we get.
+
+### trusted/allowed users are generated from the `wheel` group
+
+only members of the `wheel` group can connect to the nix daemon or perform
+builds.
+
+### impermanence / filesystem hardening
+
+#### the root file system is `tmpfs`
+
+this wipes any non-persisted areas of your disk, preventing any bad actor from
+simply slipping in some malicious binary in a way which persists on reboot.
+
+#### `/tmp` is *actually* temporary
+
+this seems like it would be common, and generally it is, but it is nice to
+point out that `/tmp` is mounted as a `tmpfs`.
+
+#### `/proc` is hardened
+
+`/proc` is mounted with `hidepid=2`, so users can only see their own processes,
+in case the other mitigations we have against this all fail.
+
+#### only necessary system-level files are persisted by impermanence
+
+logs, machine identity, networkmanager connections, etc are the only things 
+preserved in its entirety.
+
+#### user-level files are persisted in a separate LUKS-encrypted volume
+
+*note: this is a WIP feature*
+
+each user's persistent data (such as browser profiles, ssh keys, etc) lives
+inside a LUKS-encrypted container stored on the persistence drive. that 
+container is automatically unlocked by `pam_mount` when the user logs in, using
+their normal password (and optionally FIDO2 key). inside, only the files and 
+directories explicitly listed within home-manager's impermanence configuration
+are kept. the remainder of the home directory is a `tmpfs` that vanishes on 
+reboot. this means a user's secrets are never written to disk in plaintext,
+and even an attacker who compromises the running system can't read another 
+user's persistent data without knowing their password.
+
+we also have file protection policies set up to where no regular user can see
+any of the container files on /persist, reducing the attack area for
+exfiltration and store-now-decrypt-later attacks.
+
+this also means that having a separate user for any loosened configuration is
+absolutely essential. even if that kernel is compromised there is no way to
+actually open any sensitive user data, as it is still LUKS-backed.
+
+to ration storage, we also create all per-user home containers and nested
+vaults as sparse files, so they only use the disk space actually written.
+the user container's virtual size acts as a per-user quota.
+
+### userspace network hardening
+
+#### DoT is enforced for all non-tailscale DNS lookups.
+
+we use a simple `systemd-resolved` configuration to require all DNS lookups go
+through a DoT tunnel. by default, this uses dns.quad9.net. plaintext dns is
+*completely* disabled for non-tailscale DNS lookups.
+
+#### tailscale's magicdns is scoped and can't poison system dns
+
+we have tailscale enabled with `--accept-dns=false`, disabling tailscale's
+typical system-level dns override. we instead do this ourselves, adding a
+systemd network configuration to the `tailscale0` network specifiying that
+magicdns is only to be used for urls ending in `ts.net`, this prevents it
+from poisoning the entire system's dns.
+
+#### `nftables` is highly restrictive.
+
+we plan to add `opensnitch` to our network stack, but until then we rely 
+entirely on `nftables`. right now, we disable all incoming TCP and UDP ports,
+this is only altered by tailscale adding its own UDP port to the allowlist.
+
+#### time synchronisation is secured
+
+we replace `systemd-timesyncd` with `chrony` and force it to use NTS, which
+encrypts the synchronisation data and authenticates the server, preventing
+some large threat actor from feeding your system false time data, which could
+break certificate verification in a plethora of places.
+
+two servers are configured, with the option `minsources 2` set to ensure a
+consensus.
+
+#### local network discoverability has been lowered
+
+we disabled `CUPS`, `avahi`, and `bluetooth` in order to reduce the attack
+surface experienced from local network discoverability.
+
+### system-level userspace hardening
+
+#### strict PAM delays
+
+failed login, sudo, and greetd attempts are delayed by 4 seconds, making
+brute-force attacks extremely slow.
+
+#### user resource limits
+
+each user has a soft limit of 1024 processes and a hard limit of 8192 processes
+
+#### runtime kernel module loading is disabled
+
+this prevents even any root-privileged user from adding any module to the
+kernel after the boot has completed. this prevents any plethora of attacks on
+otherwise vulnerable machines or machines with compromised credentials.
+
+#### grapheneos' `hardened_malloc` replaces glibc's `malloc`
+
+`hardened_malloc` is far more hardened against various attack vectors than
+glibc, and so we've swapped it in as the system-wide allocator. this may break
+some programs. any included programs that have this issue have had their
+allocator reverted.
+
+#### `dbus-broker` is used over `dbus-daemon`
+
+`dbus-broker` is widely regarded as a faster, more reliable, and more secure
+dbus implementation. for that reason we have selected it over other options.
+
+#### auditing is active, and very dense.
+
+we have `auditd` enabled, and we're logging just about everything we can get
+our hands on. from any attempts to run module adding/removing binaries, to any
+opened/closed connections, to every privilege change.
+
+#### SMT is optionally disabled
+
+this clears out most of the remaining attack surface of sibling threads. SMT
+is only disabled when `hostprofile.noCompromises` is set to `true` or 
+`kernelConfig` is set to `"fortress"`
+
+### application-level hardening (apparmor)
+
+firstly, apparmor is enabled and set to kill any unconfined process that could
+have a profile. this means that once a profile is assigned to a program, any
+child process of that program that tries to run without a profile is immediately
+terminated. 
+
+work is ongoing to write strict `enforce`-mode profiles for many common 
+applications. dbus mediation will be activated once profiles are ready.
