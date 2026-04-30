@@ -380,12 +380,12 @@ peek into the currently running system. this ensures that no derivation can
 do things such as read files outside the sandbox or access the network during
 compilation.
 
-### package signatures are enforced
+#### package signatures are enforced
 
 all packages downloaded from the nixos cache have their signature verified
 on-device, this prevents threat actors from simply replacing the package we get.
 
-### trusted/allowed users are generated from the `wheel` group
+#### trusted/allowed users are generated from the `wheel` group
 
 only members of the `wheel` group can connect to the nix daemon or perform
 builds.
