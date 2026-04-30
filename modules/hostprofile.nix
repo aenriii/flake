@@ -23,10 +23,10 @@
       description = "The default base kernel to use. Can be 'default' or 'hardened'. Selecting 'hardened' compiles the latest release of github:anthraxx/linux-hardened, which may lag behind official kernel releases.";
     };
     kernelConfig = lib.mkOption {
-      type = lib.types.enum [ "common" "hardened" "lockdown" "loose" ];
+      type = lib.types.enum [ "common" "hardened" "fortress" "loose" ];
       default = "hardened";
       description = ''
-        The kernel configuration to use. Can be 'common', 'hardened', 'lockdown', or 'loose'.
+        The kernel configuration to use. Can be 'common', 'hardened', 'fortress', or 'loose'.
       '';
     };
   };

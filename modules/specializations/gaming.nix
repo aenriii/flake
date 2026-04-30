@@ -2,7 +2,6 @@
 {
   specialisation.gaming.configuration = {
     imports = [
-      ../kernel/gaming.nix
       ../desktop/plasma6.nix
     ];
     # use default kernel flavor and loose config for gaming

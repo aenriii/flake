@@ -59,7 +59,7 @@
     "vm.unprivileged_userfaultfd" = 0;
     "vm.mmap_rnd_bits" = 32;
     "vm.mmap_rnd_compat_bits" = 16;
-    "vm.mmap_min_addr" = 65535;
+    "vm.mmap_min_addr" = 65536;
     "vm.swappiness" = 1;
     "dev.tty.ldisc_autoload" = 0;
   };

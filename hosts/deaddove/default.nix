@@ -16,6 +16,7 @@
     ../../modules/network/firewall.nix
     ../../modules/network/dns.nix
     ../../modules/network/tailscale.nix
+    ../../modules/network/nts.nix
     # external devices
     ../../modules/security/usb-killswitch.nix
     ../../modules/security/usbguard.nix

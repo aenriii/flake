@@ -52,6 +52,7 @@
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
+                mountOptions = [ "noexec" "nosuid" "nodev" "umask=0077" ];
               };
             };
             header = {
