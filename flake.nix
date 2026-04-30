@@ -38,7 +38,6 @@
       system = "x86_64-linux";
     in
     {
-      
       nixosConfigurations.deaddove = nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = { inherit self niri-flake; };

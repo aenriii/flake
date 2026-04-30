@@ -3,8 +3,9 @@
   imports = [
     ./hardware.nix
     ./disko.nix
+    ../../modules/hostprofile.nix
     # kernel
-    ../../modules/kernel/common.nix
+    ../../modules/kernel/default.nix
     # boot stages / security
     ../../modules/boot/luks/normal.nix
     # persistence
@@ -22,6 +23,12 @@
     # desktop
     ../../modules/desktop/niri.nix
   ];
+  hostprofile = {
+    hasTPM2 = false;
+    noCompromises = false; # someday i will have a cpu good enough to survive noCompromises = true;
+    kernelFlavor = "hardened"; # import & build the latest linux-hardened release.
+    kernelConfig = "hardened"; # use a custom hardened config.
+  };
   
   nixpkgs.overlays = [ niri-flake.overlays.niri ];
   nix.settings.allowed-users = [ "aenri" ];
@@ -32,6 +39,7 @@
   networking.hostName = "actyldia";
   time.timeZone = "America/Indiana/Indianapolis";
   system.stateVersion = "25.05";
+  
   
   # no need for lanzaboote in a vm
   boot.loader.systemd-boot.enable = true;

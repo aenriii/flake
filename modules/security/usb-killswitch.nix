@@ -2,6 +2,7 @@
 {
   services.udev.extraRules = ''
     ACTION=="remove", SUBSYSTEM=="block", ENV{ID_FS_LABEL}=="NIXHEADER", \
+    RUN+="${pkgs.cryptsetup}/bin/cryptsetup close nixos" \
     RUN+="${pkgs.systemd}/bin/systemctl poweroff --force --force"
   '';
 }

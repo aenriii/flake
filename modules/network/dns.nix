@@ -9,5 +9,4 @@
     };
   };
   networking.networkmanager.dns = "systemd-resolved";
-
 }

@@ -16,7 +16,4 @@
     ];
   };
   fileSystems."/persist".neededForBoot = true;
-  
-
-
 }

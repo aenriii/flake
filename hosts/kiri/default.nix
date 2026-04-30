@@ -4,11 +4,18 @@
     ./hardware.nix
     ./disko.nix
     ../../modules/persistence/impermanence.nix
-    ../../modules/kernel/hardened.nix
+    ../../modules/hostprofile.nix
+    # kernel
+    ../../modules/kernel/default.nix
     ../../modules/network/firewall.nix
     ../../users/kiri/default.nix
   ];
-
+  hostprofile = {
+    hasTPM2 = false;
+    noCompromises = false; # someday i will have a cpu good enough to survive noCompromises = true;
+    kernelFlavor = "hardened"; # import & build the latest linux-hardened release.
+    kernelConfig = "hardened"; # use a custom hardened config.
+  };
   networking.hostName = "kiri";
   time.timeZone = "America/Indiana/Indianapolis";
   system.stateVersion = "25.05";

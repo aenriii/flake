@@ -20,11 +20,11 @@
     { domain = "@users"; item = "nproc";  type = "hard"; value = "8192"; }
   ];
   security.virtualisation.flushL1DataCache = "always";
-  # security.lockKernelModules = true; note: think more about this? how nixos handles kernel modules during rebuilds...
+  security.lockKernelModules = true;
+  security.allowSimultaneousMultithreading = config.hostprofile.noCompromises; 
   
   # memory allocator
-  environment.memoryAllocator.provider = "scudo";
-  environment.variables.SCUDO_OPTIONS = ""; # fails without this for some reason?
+  environment.memoryAllocator.provider = "graphene-hardened";
   
   # auditd
   security.audit.enable = true;

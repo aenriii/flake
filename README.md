@@ -6,15 +6,14 @@
 second-generation ryzen (zen+) with no TPM and a Samsung EVO SSD with flawed
 hardware encryption. you may need to edit these files to add more things for
 what your hardware supports. always feel free to upstream your changes!
-- because of aforementioned, i have neglected to completely disable 
-hyperthreading, it is a known attack surface *but* it is a 30+% perf loss for
-my cpu that's barely holding on as is. once i get a better cpu, hyperthreading
-is gone though. 
-- it is to note that `kernel.modules_disabled` is disabled, this is because that
-breaks live `nixos-rebuild`s. if i figure out a workaround, it will be enabled.
 - the `gaming` specialization is specifically configured to run overwatch. im
 not kidding. with this nixos install, overwatch becomes my biggest security
 threat.
+- there is a `config.hostprofile` option called `noCompromises`. this option
+is not recommended for day-to-day use. you can expect a 50-75% slowdown on any
+modern cpu by using this, as it disables SMT, enables SLUB debug consistency
+checks, each of which typically have an up to 50% slowdown, and has a plethora
+of other sacrificing-performance-for-security settings enabled.
 
 ## optional-ish auxillary hardware
 
@@ -117,19 +116,45 @@ different jurisdictions, different countries if possible.**
 
 ## page 2: hardening the kernel
 
-### choosing a kernel
+### selecting kernelConfig and kernelFlavor
 
-`linux-hardened` was removed from nix repositories due to being unmaintained.
-relying on that information, it was deemed that standard `linux` was the best
-kernel out of our options.
+for easier kernel picking-and-choosing, we have `config.hostprofile`, with
+these options:
 
-### kernel parameters
+```nix
+hostprofile = {
+  # whether or not to use the system's TPM 2.0+ module to bind the LUKS key of
+  # the primary drive within the pc to PCR 7 and PCR 9. Also includes userspace
+  # scripts to disable the binding.
+  hasTPM2 = false;
+  # enforces kernelFlavor = "hardened" and kernelConfig = "fortress", and
+  # enables various security-at-all-costs settings across the flake.
+  noCompromises = false;
+  # the kernel flavor to use. "default" pulls the latest mainline kernel from
+  # nixos' repos. "hardened" locally compiles the latest release of 
+  # linux-hardened.
+  kernelFlavor = "hardened";
+  # the kernel config set to use. 
+  # - "loose" disables a few security features in favor of being able to run
+  #   things such as Steam and Overwatch (certain requirements are imposed by 
+  #   steam & proton-battleye that other configs do not follow.)
+  # - "common" is a common secure configuration, without many of the slightly
+  #   performance-losing config options.
+  # - "hardened" is a daily-drivable secure configuration, sacrificing some
+  #   performance for security
+  # - "fortress" is a highly secure configuration which disables SMT & enables
+  #   the "F" flag for kernel parameter "slab_debug", among other things.
+  kernelConfig = "hardened";
+}
+```
 
-**kernel/common.nix - stuff used everywhere**
+### `"common"` kernel configuration
+
+####  kernel parameters
 
 - `init_on_alloc/init_on_free=1` - zero out memory when its allocated or freed,
 this mitigates use-after-free bugs wrt leaking old data
-- `slab_nomerge` - the kernel normalle merges "slab caches" with similar sizes
+- `slab_nomerge` - the kernel normally merges "slab caches" with similar sizes
 to save memory, merging creates possible exploitation paths. this disabled that
 feature.
 - `randomize_kstack_offset=on` - randomizes the kernel stack offset on every
@@ -151,31 +176,15 @@ memory.
 my bios supports TSME so this is redundant but it's nice to explicitly opt-in.
 - `random.trust_cpu=off` - we refuse to exclusively trust the cpu for entropy,
 opting to include `jitterentropy_rng` as an initrd module to help.
+- `random.trust_bootloader=off` we also refuse to trust the bootloader for
+entropy.
 - `vsyscall=none` - removes the vulnerable legacy syscall mechanisms.
 - `debugfs=off` - explicitly disables debugfs, which typically exposes a lot of
 internal kernel information
 - `module.sig_enforce` - block all unsigned modules. 
 - `lockdown=` - here for posterity, hardened and gaming have different settings.
 
-**kernel/hardened.nix - stuff used when not gaming** 
-- `page_alloc.shuffle=1` - randomizes the free page list. makes some kinds of
-attacks significantly harder
-- `spec_store_bypass_disable=on` - spectre v4 mitigation. costs some performance,
-which is why its hardened only.
-- `lockdown=confidentiality` - kernel lockdown mode; everything `integrity`
-blocks + blocking `/dev/mem`, raw disk access, hibernation, etc. basically a 
-catch-many for blocking kernel memory leaks/unauthorized writes
-- `oops=panic` - if the kernel hits an oops, panic instead of continuing. if an
-oops occurs, more likely than not your system is more vulnerable. panicing is a
-failsafe against that.
-
-**kernel/gaming.nix - don't break proton-battleye** 
-- `lockdown=integrity` - blocks unsigned modules and kernel modifications,
-among some other things.
-
-### sysctl parameters
-
-**kernel/common.nix - stuff used everywhere**
+#### sysctl parameters
 
 - `vm.mmap_rnd_bits/compat_bits` - sets the maximum ASLR entropy for memory 
 mappings
@@ -196,7 +205,7 @@ mitigates some heap exploit techniques.
 - `fs.protected_hardlinks/symlinks=1` - prevents hard/symlink-based TOCTOU 
 attacks
 - `fs.protected_regular/fifos=2` - extends the above protection to regular/fifo
-files. also prevents privelege excalation via O_CREAT.
+files. also prevents privilege escalation via O_CREAT.
 - `dev.tty.ldisc_autoload=0` - disables automatic TTY line discipline module
 loading. obscure attack surface, but doesnt hurt to be comprehensive
 - `kernel.sysrq=4` - only allow `sync` sysrqs 
@@ -212,25 +221,94 @@ many ICMP attacks that can hijack routing
 - `accept_source_route=0` - disables source routing / ip spoofing method
 - `rp_filter=2` - verifies that incoming packets could've come from where they 
 claim
-- `log_martians=1` - log packets with impsosible source addresses
+- `log_martians=1` - log packets with impossible source addresses
 - `net.ipv6.use_tempaddr=2` - uses temporary randomized address instead of
 mac-derived address
 - `net.ipv6.accept_ra=0` - don't accept router advertisements. these can
 redirect all traffic.
 
-**kernel/hardened.nix - stuff used when not gaming**
-- `kernel.yama.ptrace_scope=3` - nobody can ptrace *anything*
-- `kernel.unprivileged_userns_clone=0` - disables unprivileged user namespaces.
-- `kernel.perf_event_paranoid=3` - restricts `perf` event visibility
-- `kernel.unprivileged_bpf_disabled=1` - only root can load BPF programs
+### `"loose"` kernel configuration
 
-**kernel/gaming.nix - dont break proton-battleye**
+everything in `"common"`, *and*
+
+#### kernel parameters
+
+- `lockdown=integrity` - blocks unsigned modules and kernel modifications,
+among some other things.
+
+#### sysctl parameters
+
 - `kernel.yama.ptrace_scope=1` - processes can ptrace child processes
 - `kernel.perf_event_paranoid=1` - restricts `perf` event visibility less
 - `kernel.unprivileged_userns_clone=1` - explicitly enables unpriviliged user
 namespaces, steam uses these.
 - `kernel.unprivileged_bpf_disabled=0` - explicitly enables unprivileged bpf
 modules, which are used by some games.
+
+### `"hardened"` kernel configurations
+
+everything in `"common"`, *and*
+
+#### kernel parameters
+
+- `page_alloc.shuffle=1` - randomizes the free page list. makes some kinds of
+attacks significantly harder
+- `spec_store_bypass_disable=on` - spectre v4 mitigation. costs some performance,
+which is why its hardened only.
+- `lockdown=confidentiality` - kernel lockdown mode; everything `integrity`
+blocks + blocking `/dev/mem`, raw disk access, hibernation, etc. basically a 
+catch-many for blocking kernel memory leaks/unauthorized writes
+- `oops=panic` - if the kernel hits an oops, panic instead of continuing. if an
+oops occurs, more likely than not your system is more vulnerable. panicing is a
+failsafe against that.
+- `slab_debug=ZP` - enables red zones and poisoning for the kernel slab 
+allocator. 
+#### sysctl parameters
+
+- `kernel.yama.ptrace_scope=3` - nobody can ptrace *anything*
+- `kernel.unprivileged_userns_clone=0` - disables unprivileged user namespaces.
+- `kernel.perf_event_paranoid=3` - restricts `perf` event visibility
+- `kernel.unprivileged_bpf_disabled=1` - only root can load BPF programs
+
+### `"fortress"` kernel configurations
+
+> note: expect a system slowdown of 50-75% while using this kernel 
+> configuration. this disables simultaneous multithreading and enables an
+> expensive `slab_debug` flag which sanity-checks *every slab allocation ever*.
+> each of these can have performance hits anywhere from 30-50%. 
+
+everything in `"common"`, *and*
+
+#### kernel parameters
+
+- `page_alloc.shuffle=1` - randomizes the free page list. makes some kinds of
+attacks significantly harder
+- `spec_store_bypass_disable=on` - spectre v4 mitigation. costs some performance,
+which is why its hardened only.
+- `lockdown=confidentiality` - kernel lockdown mode; everything `integrity`
+blocks + blocking `/dev/mem`, raw disk access, hibernation, etc. basically a 
+catch-many for blocking kernel memory leaks/unauthorized writes
+- `oops=panic` - if the kernel hits an oops, panic instead of continuing. if an
+oops occurs, more likely than not your system is more vulnerable. panicing is a
+failsafe against that.
+- `slab_debug=FZP` - enables debug consistency checks, red zones, and poisoning
+for the kernel slab allocator. do not pass go, immediately lose 50-70% of your
+system performance
+- `nosmt` - completely disable simultaneous multithreading. do not pass go,
+immediately lose 30-50% of your cpu performance.
+- `mds=full,nosmt` - mitigates MDS, explicitly flushes relevant buffers on
+every kernel -> user transition. performance loss from l1tf is diminished via
+nosmt
+- `l1tf=full,nosmt` - mitigates L1 terminal faults (a.k.a. Foreshadow), flushes
+the L1 data cache on each kernel -> user transition. performance loss from l1tf
+is diminished via nosmt.
+
+#### sysctl parameters
+
+- `kernel.yama.ptrace_scope=3` - nobody can ptrace *anything*
+- `kernel.unprivileged_userns_clone=0` - disables unprivileged user namespaces.
+- `kernel.perf_event_paranoid=3` - restricts `perf` event visibility
+- `kernel.unprivileged_bpf_disabled=1` - only root can load BPF programs
 
 
 ### blacklisted modules
@@ -243,3 +321,7 @@ are often ripe with CVEs, and have a large attack surface
   "rose" "decnet" "econet" "af_802154"
   "ipx" "appletalk" "atm" "can"
 ```
+
+## page 3: hardening userspace
+
+we also put a lot of work into hardening userspace. 

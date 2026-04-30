@@ -1,6 +1,5 @@
-{ config, pkgs, lib, ... }:
+{ ... }:
 {
-  boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelParams = [
     "init_on_alloc=1"
     "init_on_free=1"
@@ -15,10 +14,11 @@
     "mem_encrypt=on"
     "pti=on"
     "spectre_v2=on"
-    "mds=full"
     "efi=disable_early_pci_dma"
     "random.trust_cpu=off"
+    "random.trust_bootloader=off"
     "kvm.nx_huge_pages=force"
+    "mds=full"
   ];
   boot.kernel.sysctl = {
     "kernel.kptr_restrict" = 2;
@@ -70,6 +70,7 @@
     "ipx" "appletalk" "atm" "can"
   ];
   boot.initrd.kernelModules = [ "jitterentropy_rng" ];
+  
   
 
 }
