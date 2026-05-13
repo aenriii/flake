@@ -68,6 +68,13 @@
     "n-hdlc" "ax25" "netrom" "x25"
     "rose" "decnet" "econet" "af_802154"
     "ipx" "appletalk" "atm" "can"
+    # good lord there are lots of zerodays these days
+    "rxrpc" "algif_aead"
+    # these are technically for protocol encryption but they're so 
+    # vulnerable and neither mullvad nor tailscale use them, and if
+    # you're using something that does, you should probably be using
+    # something else.
+    "esp4" "esp6" 
   ];
   boot.initrd.kernelModules = [ "jitterentropy_rng" ];
   
