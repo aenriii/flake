@@ -57,6 +57,7 @@
         modules = [
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
+          lanzaboote.nixosModules.lanzaboote
           impermanence.nixosModules.impermanence
           home-manager.nixosModules.home-manager
           niri-flake.nixosModules.niri
@@ -68,6 +69,7 @@
         specialArgs = { inherit self; };
         modules = [
           disko.nixosModules.disko
+          lanzaboote.nixosModules.lanzaboote
           impermanence.nixosModules.impermanence
           home-manager.nixosModules.home-manager
           ./hosts/kiri/default.nix

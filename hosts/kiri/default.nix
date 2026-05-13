@@ -3,22 +3,24 @@
   imports = [
     ./hardware.nix
     ./disko.nix
-    ../../modules/persistence/impermanence.nix
     ../../modules/hostprofile.nix
-    # kernel
-    ../../modules/kernel/default.nix
+    ../../modules/persistence/impermanence.nix
     ../../modules/network/firewall.nix
     ../../users/kiri/default.nix
   ];
   hostprofile = {
-    hasTPM2 = false;
-    noCompromises = false; # someday i will have a cpu good enough to survive noCompromises = true;
-    kernelFlavor = "hardened"; # import & build the latest linux-hardened release.
-    kernelConfig = "hardened"; # use a custom hardened config.
+    boot = {
+      luks = "basic";
+    };
+    kernel = {
+      flavor = "hardened";
+      config = "hardened";
+    };
+    desktops = [];
   };
   networking.hostName = "kiri";
   time.timeZone = "America/Indiana/Indianapolis";
-  system.stateVersion = "25.05";
+  system.stateVersion = "25.11";
   nix.settings.allowed-users = [ "kiri" "@wheel" ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;

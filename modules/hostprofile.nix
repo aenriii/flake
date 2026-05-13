@@ -9,7 +9,6 @@ in
     ./boot/luks/paranoid.nix
     ./desktop/niri.nix
     ./desktop/plasma6.nix
-    ./specializations/gaming.nix
     ./specializations/fortress.nix
   ];
 

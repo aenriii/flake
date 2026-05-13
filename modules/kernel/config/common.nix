@@ -36,7 +36,6 @@
 
     # userspace hardening
     "apparmor=1"
-    "security=apparmor"
   ];
   boot.kernel.sysctl = {
     "kernel.kptr_restrict" = 2;
