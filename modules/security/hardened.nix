@@ -10,7 +10,7 @@
   ];
   security.virtualisation.flushL1DataCache = "always";
   security.lockKernelModules = true;
-  security.allowSimultaneousMultithreading = !config.hostprofile.noCompromises; 
+  security.allowSimultaneousMultithreading = (config.hostprofile.kernel.config == "fortress"); 
   
   # memory allocator
   environment.memoryAllocator.provider = "graphene-hardened";

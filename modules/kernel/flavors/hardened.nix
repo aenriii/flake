@@ -1,6 +1,6 @@
 { config, pkgs, lib, ... }:
 let 
-  use = config.hostprofile.noCompromises || config.hostprofile.kernelFlavor == "hardened";
+  use = config.hostprofile.kernel.flavor == "hardened";
 in {
   # description = "hardened.nix - locally compiling latest linux-hardened release";
   warnings = lib.mkIf use [ "You are using the hardened kernel. Kernel updates may take hours to compile!" ];
@@ -90,6 +90,10 @@ in {
   
             # not needed for less than a decade old glibc versions
             LEGACY_VSYSCALL_NONE = yes;
+
+            # assert lockdown lsm is enabled early, just in case.
+            CONFIG_SECURITY_LOCKDOWN_LSM_EARLY = yes;
+            
           };
         } // (args.argsOverride or {}));
       linux_hardened = pkgs.callPackage linux_hardened_pkg{};

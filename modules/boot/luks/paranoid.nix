@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 let
   fido2HybridUnlock = pkgs.writeShellScript "fido2-hybrid-unlock" ''
     #!/usr/bin/env bash
@@ -23,10 +23,10 @@ let
       echo "No FIDO2 device found" >&2
       exit 1
     }
-    
+
     get_salt() {
       PERSONALIZATION_CONSTANT="pyria:modules/boot/luks/fido2.nix"
-      
+
       echo "Touch your security key (1/2)" >&2
       printf '%s' "$PERSONALIZATION_CONSTANT" \
         | fido2-assert \
@@ -36,14 +36,14 @@ let
             "$DEVICE" \
             | head -1
     }
-    
+
     # invoked as attempt_unlock <attempt_number> <luks_device> <salt>
     attempt_unlock() {
       local passphrase
       passphrase=$(systemd-ask-password "Enter passphrase for ${2} (Attempt $1/10: ")
-      
+
       echo "Deriving key, this may take a few moments..." >&2
-      
+
       local kdf_output
       kdf_output=$(printf '%s' "$passphrase" \
         | argon2 "$3" \
@@ -52,7 +52,7 @@ let
         || { unset passphrase; return 1; }
       unset passphrase
       echo "Touch your security key (2/2)" >&2
-      
+
       local luks_key
       luks_key=$(printf '%s' "$kdf_output" \
         | fido2-assert \
@@ -62,7 +62,7 @@ let
             | head -1) \
         || { unset kdf_output; return 1; }
       unset kdf_output
-      
+
       printf '%s' "$luks_key" \
         | cryptsetup open "$2" nixos --header /boot/luks-header/nixos.img --key-file=- > /dev/null 2>&1
       return $?
@@ -105,65 +105,69 @@ let
           echo 0 > "$2"
           return 0
         fi
-      done      
+      done
     }
     find_fido2_device
     auth_loop "$LUKS_DEVICE" "$LOCKOUT_FILE"
   '';
-in 
+in
 {
-  boot.initrd.systemd.enable = true;
-  boot.initrd.kernelModules = [ "vfat" "ext4" "btrfs"];
-  
-  # workaround for nixpkgs#368856
-  boot.initrd.services.udev.packages = [
-    (pkgs.runCommand "udev-fido2-rules" {} ''
-      mkdir -p $out/lib/udev/rules.d
-      cp ${pkgs.systemd}/lib/udev/rules.d/60-fido-id.rules \
-        $out/lib/udev/rules.d/60-fido-id.rules
-    '')
-  ];
-  
-  boot.initrd.systemd.storePaths = [
-    fido2HybridUnlock
-    "${pkgs.libfido2}/bin/fido2-assert"
-    "${pkgs.libfido2}/bin/fido2-token"
-    "${pkgs.libargon2}/bin/argon2"
-    "${pkgs.cryptsetup}/bin/cryptsetup"
-    "${pkgs.systemd}/lib/udev/fido_id"
-  ];
-  
-  # header drive
-  boot.initrd.luks.devices."luks-header" = {
-    device = "/dev/disk/by-partlabel/header";
-    crypttabExtraOpts = [
-      "fido2-device=auto"
-      "token-timeout=0"
+  options.pyria.paranoidLuks.enable = lib.mkEnableOption "paranoid LUKS2 fido2+passphrase hybrid unlock";
+
+  config = lib.mkIf config.pyria.paranoidLuks.enable {
+    boot.initrd.systemd.enable = true;
+    boot.initrd.kernelModules = [ "vfat" "ext4" "btrfs" ];
+
+    # workaround for nixpkgs#368856
+    boot.initrd.services.udev.packages = [
+      (pkgs.runCommand "udev-fido2-rules" {} ''
+        mkdir -p $out/lib/udev/rules.d
+        cp ${pkgs.systemd}/lib/udev/rules.d/60-fido-id.rules \
+          $out/lib/udev/rules.d/60-fido-id.rules
+      '')
     ];
-  };
-  fileSystems."/boot/luks-header".neededForBoot = true;
-  
-  # main drive
-  boot.initrd.systemd.services.fido2-hybrid-unlock = {
-    description = "FIDO2 hybrid LUKS unlock";
-    wantedBy = [ "cryptsetup.target" ];
-    before = [ "cryptsetup.target" ];
-    after = [
-      "systemd-udev-settle.service"
-      "dev-disk-by\\x2dpartlabel-nixos.device"
-      "systemd-cryptsetup@luks-header.service"
-      "boot-luks\\x2dheader.mount"
+
+    boot.initrd.systemd.storePaths = [
+      fido2HybridUnlock
+      "${pkgs.libfido2}/bin/fido2-assert"
+      "${pkgs.libfido2}/bin/fido2-token"
+      "${pkgs.libargon2}/bin/argon2"
+      "${pkgs.cryptsetup}/bin/cryptsetup"
+      "${pkgs.systemd}/lib/udev/fido_id"
     ];
-    requires = [
-      "dev-disk-by\\x2dpartlabel-nixos.device"
-      "systemd-cryptsetup@luks-header.service"
-      "boot-luks\\x2dheader.mount"
-    ];
-    unitConfig.DefaultDependencies = false;
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-      ExecStart = "${fido2HybridUnlock} /dev/disk/by-partlabel/nixos /boot/luks-header/credential.id /boot/luks-header/unlock-attempts";
+
+    # header drive
+    boot.initrd.luks.devices."luks-header" = {
+      device = "/dev/disk/by-partlabel/header";
+      crypttabExtraOpts = [
+        "fido2-device=auto"
+        "token-timeout=0"
+      ];
+    };
+    fileSystems."/boot/luks-header".neededForBoot = true;
+
+    # main drive
+    boot.initrd.systemd.services.fido2-hybrid-unlock = {
+      description = "FIDO2 hybrid LUKS unlock";
+      wantedBy = [ "cryptsetup.target" ];
+      before = [ "cryptsetup.target" ];
+      after = [
+        "systemd-udev-settle.service"
+        "dev-disk-by\\x2dpartlabel-nixos.device"
+        "systemd-cryptsetup@luks-header.service"
+        "boot-luks\\x2dheader.mount"
+      ];
+      requires = [
+        "dev-disk-by\\x2dpartlabel-nixos.device"
+        "systemd-cryptsetup@luks-header.service"
+        "boot-luks\\x2dheader.mount"
+      ];
+      unitConfig.DefaultDependencies = false;
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = "${fido2HybridUnlock} /dev/disk/by-partlabel/nixos /boot/luks-header/credential.id /boot/luks-header/unlock-attempts";
+      };
     };
   };
 }
