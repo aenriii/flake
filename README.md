@@ -293,11 +293,6 @@ far.
 
 ### general hardening
 
-#### swap `sudo` for `sudo-rs`
-
-reduces the attack surface of the most widely used `setuid` binary by replacing
-it with a rust alternative. we #love #rust!
-
 #### FIDO2 key support is integrated into userspace
 
 fairly simple, really, its probably best that your passkeys are stored on an
@@ -314,6 +309,12 @@ other than human-interface devices such as a keyboard and mouse are blocked
 immediately. this stops various attempts at physical access based attacks.
 
 ### systemd hardening
+
+#### drop `sudo` for `run0`
+
+it's not exactly a drop-in replacement, but completely eliminating the need for
+setuid binaries is very good practice for high-security environments. we're
+working on a small wrapper script that converts `sudo` calls to `run0` calls.
 
 #### core dumps are disabled.
 

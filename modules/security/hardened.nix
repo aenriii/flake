@@ -2,7 +2,6 @@
 {
   imports = [
     ./systemd/general.nix
-    ./sudo-rs.nix
     ./nix.nix
     ./pam.nix
     ./audit.nix
@@ -21,4 +20,7 @@
   services.avahi.enable = false;
   services.printing.enable = false;
   hardware.bluetooth.powerOnBoot = false;
+
+  # disable sudo
+  security.sudo.enable = false;
 }  
