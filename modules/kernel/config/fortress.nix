@@ -1,7 +1,7 @@
 { lib, config, ... }:
 
 let 
-  use = config.hostprofile.noCompromises || config.hostprofile.kernelConfig == "fortress";
+  use = config.hostprofile.kernel.config == "fortress";
 in {
   # description = "fortress.nix - sacrifice everything for kernel security.";
   warnings = lib.mkIf use [ ''

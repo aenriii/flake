@@ -1,24 +1,42 @@
 { ... }:
 {
   boot.kernelParams = [
+    # memory hardening
     "init_on_alloc=1"
     "init_on_free=1"
     "slab_nomerge"
     "randomize_kstack_offset=on"
+    "mem_encrypt=on"
+    "efi=disable_early_pci_dma"
+    "page_alloc.shuffle=1"
+    "kvm.nx_huge_pages=force"
+    ## these used to be `hardened`+ only, but are now enabled by default.
+    ## they have a minor performance impact, but the benefits far
+    ## outweigh the cost.
+    "slab_debug=ZP"
+    "spec_store_bypass_disable=on"
+
+
+    # kernel hardening
+    "lockdown=confidentiality"
     "vsyscall=none"
     "debugfs=off"
     "module.sig_enforce"
+    "random.trust_cpu=off"
+    "random.trust_bootloader=off"
+    "oops=panic"
+
+    # hardware hardening
     "amd_iommu=on"
     "iommu.strict=1"
     "iommu.passthrough=0"
-    "mem_encrypt=on"
+    "mds=full"    
     "pti=on"
     "spectre_v2=on"
-    "efi=disable_early_pci_dma"
-    "random.trust_cpu=off"
-    "random.trust_bootloader=off"
-    "kvm.nx_huge_pages=force"
-    "mds=full"
+
+    # userspace hardening
+    "apparmor=1"
+    "security=apparmor"
   ];
   boot.kernel.sysctl = {
     "kernel.kptr_restrict" = 2;
@@ -28,6 +46,16 @@
     "kernel.core_pattern" = "|/bin/false";
     "kernel.printk" = "3 3 3 3";
     "kernel.sysrq" = 4;
+    # userns enabled at kernel level but apparmor gates per-application.
+    # unprivileged_userns_clone=1 allows creation,
+    # apparmor_restrict_unprivileged_userns=1 requires an apparmor profile
+    # to explicitly grant userns before it succeeds.
+    "kernel.unprivileged_userns_clone" = 1;
+    "kernel.apparmor_restrict_unprivileged_userns" = 1;
+    "kernel.apparmor_restrict_unprivileged_unconfined" = 1;
+    "kernel.perf_event_paranoid" = 3;
+    "kernel.yama.ptrace_scope" = 1;
+    "kernel.unprivileged_bpf_disabled" = 1;
     "net.core.bpf_jit_harden" = 2;
     "net.ipv4.tcp_syncookies" = 1;
     "net.ipv4.tcp_timestamps" = 0;
@@ -77,7 +105,4 @@
     "esp4" "esp6" 
   ];
   boot.initrd.kernelModules = [ "jitterentropy_rng" ];
-  
-  
-
 }
