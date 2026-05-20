@@ -1,0 +1,24 @@
+- [ ] `pyria` binary
+  - [ ] `pyria setup` commands
+  - [ ] `pyria nix upgrade`
+- [ ] gaming specialization hardening
+  - [ ] investigate: what *does* proton-battleye need to run?
+    - [x] `debugfs`? (can we `lockdown=confidentiality` then allow access to `debugfs` with apparmor?)
+      - not needed, `lockdown=confidentiality` disables debugfs and proton-battleye
+      works fine
+    - [ ] `userns` (known needed, can we disable it via sysctls and enable it for specific processes with apparmor?)
+    - [ ] `ptrace` (likely needed, how can we restrict this?)
+  - [ ] steam / proton / battleye apparmor profiles
+  - [ ] move to `hardened` kernel config if possible, else `common`
+- [ ] evaluate if anything lower than `hardened` kernel config is needed for day-to-day use.
+  - [ ] deprecate/remove `loose` kernel config options
+  - [ ] investigate: does the UX benefit of `common` kernel config outweigh the security benefits of `hardened`?
+    - [ ] identify which hardened settings have noticable ux/perf impact
+      - `oops=panic`, could make computers randomly panic with flaky hardware/drivers?
+      - `ptrace_scope=3`, makes debugging impossible. maybe we can use apparmor for this?
+      - `spec_store_bypass_disable=on` - 5-15% perf impact on memory-heavy workloads
+    - [ ] identify which hardened settings are effectively free
+      - `slab_debug=ZP` should be next to free on modern hardware
+        - [ ] investigate: does `slab_debug=ZP` interact badly with `hardened_malloc` since both are doing allocator-level hardening?
+      - `page_alloc.shuffle=1`, no real-world perf impact, basically transparent ux-wise
+      - `lockdown=confidentiality`, no real world perf impact, no real ux impact
