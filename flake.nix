@@ -62,12 +62,13 @@
         {
           pyria = pkgs.callPackage ./nix/packages/pyria.nix { };
           pyria-sudo = pkgs.callPackage ./nix/packages/pyria-sudo.nix { };
-          default = self.packages.${system}.pyria;
+          apparmor-d-nix-patch = pkgs.callPackage ./nix/packages/apparmor-d-nix-patch.nix { inherit inputs; };
         });
 
       overlays.default = final: prev: {
         pyria = final.callPackage ./nix/packages/pyria.nix { };
         pyria-sudo = final.callPackage ./nix/packages/pyria-sudo.nix { };
+        apparmor-d-nix-patch = final.callPackage ./nix/packages/apparmor-d-nix-patch.nix { };
       };
       homeModules = {
         pyria-sudo = ./nix/home-modules/pyria-sudo.nix;
@@ -75,8 +76,16 @@
       };
       nixosConfigurations.deaddove = nixpkgs.lib.nixosSystem {
         inherit system;
-        specialArgs = { inherit self niri-flake; };
+        specialArgs = { inherit self niri-flake inputs; };
         modules = [
+          {
+            nixpkgs.overlays = [ 
+              self.overlays.default
+              helium.overlays.default 
+              claude-code.overlays.default
+              niri-flake.overlays.niri
+            ];
+          }
           disko.nixosModules.disko
           lanzaboote.nixosModules.lanzaboote
           impermanence.nixosModules.impermanence
@@ -90,6 +99,15 @@
         inherit system;
         specialArgs = { inherit self niri-flake; };
         modules = [
+          {
+            nixpkgs.overlays = [ 
+              self.overlays.default
+              helium.overlays.default 
+              claude-code.overlays.default
+              niri-flake.overlays.niri
+            ];
+          }
+          
           disko.nixosModules.disko
           sops-nix.nixosModules.sops
           lanzaboote.nixosModules.lanzaboote
@@ -103,6 +121,14 @@
         inherit system;
         specialArgs = { inherit self; };
         modules = [
+          {
+            nixpkgs.overlays = [ 
+              self.overlays.default
+              helium.overlays.default 
+              claude-code.overlays.default
+              niri-flake.overlays.niri
+            ];
+          }
           disko.nixosModules.disko
           lanzaboote.nixosModules.lanzaboote
           impermanence.nixosModules.impermanence
@@ -119,8 +145,8 @@
               helium.overlays.default 
               claude-code.overlays.default
               self.overlays.default
+              niri-flake.overlays.niri
             ];
-            #config.noctalia.ipc-sh = ["qs" "-c" "noctalia-shell" "ipc" "call"];
           }
           self.homeModules.pyria-sudo
           ./users/aenri/home.nix
