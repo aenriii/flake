@@ -23,7 +23,7 @@
     specializations = [ "fortress" ];
   };
   
-  nixpkgs.overlays = [ niri-flake.overlays.niri ];
+  nixpkgs.config.allowUnfree = true;
   nix.settings.allowed-users = [ "aenri" ];
   nix.gc = { automatic = true; dates = "weekly"; options = "--delete-older-than 30d"; };
   nix.optimise.automatic = true;
@@ -32,6 +32,8 @@
   networking.hostName = "deaddove";
   time.timeZone = "America/Indiana/Indianapolis";
   system.stateVersion = "25.11";
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
   home-manager.users.aenri = {
     programs.niri.settings = {
       outputs = {};

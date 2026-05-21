@@ -34,7 +34,8 @@
   };
 
   services.tailscale.enable = true;
-
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
   # allow tailscale traffic and ssh over tailnet
   networking.firewall = {
     allowedUDPPorts = [ config.services.tailscale.port ];

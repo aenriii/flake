@@ -10,7 +10,7 @@
     ../../modules/network/dns.nix
     ../../modules/network/tailscale.nix
     ../../modules/security/sops.nix
-    ../../modules/security/apparmor/hardened.nix
+    ../../modules/security/apparmor.nix
     ../../modules/security/hardened.nix
     ../../users/aenri/default.nix
   ];
@@ -25,7 +25,7 @@
     desktops = [ "niri" ];
   };
   
-  nixpkgs.overlays = [ niri-flake.overlays.niri ];
+  nixpkgs.config.allowUnfree = true;
   nix.settings.allowed-users = [ "aenri" ];
   nix.gc = { automatic = true; dates = "weekly"; options = "--delete-older-than 30d"; };
   nix.optimise.automatic = true;
@@ -37,6 +37,8 @@
   
   
   # no need for lanzaboote in a vm
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 }
