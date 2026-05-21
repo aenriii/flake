@@ -57,6 +57,7 @@
       forAllSystems = nixpkgs.lib.genAttrs output-systems;
     in
     {
+      niri-flake.cache.enable = true;
       packages = forAllSystems (system:
         let pkgs = nixpkgs.legacyPackages.${system}; in
         {
@@ -148,6 +149,7 @@
               niri-flake.overlays.niri
             ];
           }
+          niri-flake.homeModules.config
           self.homeModules.pyria-sudo
           ./users/aenri/home.nix
         ];

@@ -13,6 +13,7 @@
     ./home/zsh.nix
     ./home/dev.nix
     ./home/zed.nix
+    ./home/niri.nix
   ];
   home.packages = [
     pkgs.zed-editor

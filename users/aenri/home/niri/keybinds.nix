@@ -1,113 +1,115 @@
 { config, lib, scripts, ... }:
+  let noctalia = argv: builtins.concatLists [[ "qs" "-c" "noctalia-shell" "ipc" "call" ] argv];
+in
 {
   "Mod+Return".action.spawn = "alacritty";
-  "Mod+D".action.spawn = config.noctalia.ipc-sh + ["launcher" "toggle"];
-  "Mod+ALT+L".action.spawn = config.noctalia.ipc-sh + ["lockScreen" "lock"];
-  "Mod+Shift+Q".action.spawn = config.noctalia.ipc-sh + ["sessionMenu" "toggle"];
+  "Mod+D".action.spawn = noctalia ["launcher" "toggle"];
+  "Mod+ALT+L".action.spawn = noctalia ["lockScreen" "lock"];
+  "Mod+Shift+Q".action.spawn = noctalia ["sessionMenu" "toggle"];
 
   "XF86AudioRaiseVolume" = {
-    action.spawn = config.noctalia.ipc-sh + ["volume" "increase"];
+    action.spawn = noctalia ["volume" "increase"];
     allow-when-locked = true;
   };
   "XF86AudioLowerVolume" = {
-    action.spawn = config.noctalia.ipc-sh + ["volume" "decrease"];
+    action.spawn = noctalia ["volume" "decrease"];
     allow-when-locked = true;
   };
   "XF86AudioMute" = {
-    action.spawn = config.noctalia.ipc-sh + ["volume" "muteOutput"];
+    action.spawn = noctalia ["volume" "muteOutput"];
     allow-when-locked = true;
   };
   "XF86AudioMicMute" = {
-    action.spawn = config.noctalia.ipc-sh + ["volume" "muteInput"];
+    action.spawn = noctalia ["volume" "muteInput"];
     allow-when-locked = true;
   };
   "XF86AudioNext" = {
-    action.spawn = config.noctalia.ipc-sh + ["media" "next"];
+    action.spawn = noctalia ["media" "next"];
     allow-when-locked = true;
   };
   "XF86AudioPrev" = {
-    action.spawn = config.noctalia.ipc-sh + ["media" "previous"];
+    action.spawn = noctalia ["media" "previous"];
     allow-when-locked = true;
   };
   "XF86AudioPlay" = {
-    action.spawn = config.noctalia.ipc-sh + ["media" "playPause"];
+    action.spawn = noctalia ["media" "playPause"];
     allow-when-locked = true;
   };
   "XF86AudioPause" = {
-    action.spawn = config.noctalia.ipc-sh + ["media" "playPause"];
+    action.spawn = noctalia ["media" "playPause"];
     allow-when-locked = true;
   };
 
   "XF86MonBrightnessUp" = {
-    action.spawn = config.noctalia.ipc-sh + ["brightness" "increase"];
+    action.spawn = noctalia ["brightness" "increase"];
     allow-when-locked = true;
   };
   "XF86MonBrightnessDown" = {
-    action.spawn = config.noctalia.ipc-sh + ["brightness" "decrease"];
+    action.spawn = noctalia ["brightness" "decrease"];
     allow-when-locked = true;
   };
 
 
-  "Mod+Q".action.close-window = true;
-  "Mod+Left".action.focus-column-left = true;
-  "Mod+H".action.focus-column-left = true;
-  "Mod+Right".action.focus-column-right = true;
-  "Mod+L".action.focus-column-right = true;
-  "Mod+Up".action.focus-window-up = true;
-  "Mod+K".action.focus-window-up = true;
-  "Mod+Down".action.focus-window-down = true;
-  "Mod+J".action.focus-window-down = true;
+  "Mod+Q".action.close-window = [ ];
+  "Mod+Left".action.focus-column-left = [ ];
+  "Mod+H".action.focus-column-left = [ ];
+  "Mod+Right".action.focus-column-right = [ ];
+  "Mod+L".action.focus-column-right = [ ];
+  "Mod+Up".action.focus-window-up = [ ];
+  "Mod+K".action.focus-window-up = [ ];
+  "Mod+Down".action.focus-window-down = [ ];
+  "Mod+J".action.focus-window-down = [ ];
   
-  "Mod+CTRL+Left".action.move-column-left = true;
-  "Mod+CTRL+H".action.move-column-left = true;
-  "Mod+CTRL+Right".action.move-column-right = true;
-  "Mod+CTRL+L".action.move-column-right = true;
-  "Mod+CTRL+UP".action.move-window-up = true;
-  "Mod+CTRL+K".action.move-window-up = true;
-  "Mod+CTRL+Down".action.move-window-down = true;
-  "Mod+CTRL+J".action.move-window-down = true;
+  "Mod+CTRL+Left".action.move-column-left = [ ];
+  "Mod+CTRL+H".action.move-column-left = [ ];
+  "Mod+CTRL+Right".action.move-column-right = [ ];
+  "Mod+CTRL+L".action.move-column-right = [ ];
+  "Mod+CTRL+UP".action.move-window-up = [ ];
+  "Mod+CTRL+K".action.move-window-up = [ ];
+  "Mod+CTRL+Down".action.move-window-down = [ ];
+  "Mod+CTRL+J".action.move-window-down = [ ];
 
-  "Mod+Home".action.focus-column-first = true;
-  "Mod+End".action.focus-column-last = true;
-  "Mod+CTRL+Home".action.move-column-to-first = true;
-  "Mod+CTRL+End".action.move-column-to-last = true;
+  "Mod+Home".action.focus-column-first = [ ];
+  "Mod+End".action.focus-column-last = [ ];
+  "Mod+CTRL+Home".action.move-column-to-first = [ ];
+  "Mod+CTRL+End".action.move-column-to-last = [ ];
   
-  "Mod+Shift+Left".action.focus-monitor-left = true;
-  "Mod+Shift+Right".action.focus-monitor-right = true;
-  "Mod+Shift+UP".action.focus-monitor-up = true;
-  "Mod+Shift+Down".action.focus-monitor-down = true;
+  "Mod+Shift+Left".action.focus-monitor-left = [ ];
+  "Mod+Shift+Right".action.focus-monitor-right = [ ];
+  "Mod+Shift+UP".action.focus-monitor-up = [ ];
+  "Mod+Shift+Down".action.focus-monitor-down = [ ];
   
-  "Mod+Shift+CTRL+Left".action.move-column-to-monitor-left = true;
-  "Mod+Shift+CTRL+Right".action.move-column-to-monitor-right = true;
-  "Mod+Shift+CTRL+UP".action.move-column-to-monitor-up = true;
-  "Mod+Shift+CTRL+Down".action.move-column-to-monitor-down = true;
+  "Mod+Shift+CTRL+Left".action.move-column-to-monitor-left = [ ];
+  "Mod+Shift+CTRL+Right".action.move-column-to-monitor-right = [ ];
+  "Mod+Shift+CTRL+UP".action.move-column-to-monitor-up = [ ];
+  "Mod+Shift+CTRL+Down".action.move-column-to-monitor-down = [ ];
   
   # Window Movement and Focus
   "Mod+WheelScrollDown" = { 
-    action.focus-workspace-down = true;
+    action.focus-workspace-down = [ ];
     cooldown-ms=150;
   };
   "Mod+WheelScrollUp" = { 
-    action.focus-workspace-up = true;
+    action.focus-workspace-up = [ ];
     cooldown-ms=150;
   };
   "Mod+CTRL+WheelScrollDown" = { 
-    action.move-column-to-workspace-down = true;
+    action.move-column-to-workspace-down = [ ];
     cooldown-ms=150;
   };
   "Mod+CTRL+WheelScrollUp" = { 
-    action.move-column-to-workspace-up = true;
+    action.move-column-to-workspace-up = [ ];
     cooldown-ms=150;
   };
-  "Mod+WheelScrollRight".action.focus-column-right = true;
-  "Mod+WheelScrollLeft".action.focus-column-left = true;
-  "Mod+CTRL+WheelScrollRight".action.move-column-right = true;
-  "Mod+CTRL+WheelScrollLeft".action.move-column-left = true;
+  "Mod+WheelScrollRight".action.focus-column-right = [ ];
+  "Mod+WheelScrollLeft".action.focus-column-left = [ ];
+  "Mod+CTRL+WheelScrollRight".action.move-column-right = [ ];
+  "Mod+CTRL+WheelScrollLeft".action.move-column-left = [ ];
   
-  "Mod+Shift+WheelScrollDown".action.focus-column-right = true;
-  "Mod+Shift+WheelScrollUp".action.focus-column-left = true;
-  "Mod+CTRL+Shift+WheelScrollDown".action.move-column-right = true;
-  "Mod+CTRL+Shift+WheelScrollUp".action.move-column-left = true;
+  "Mod+Shift+WheelScrollDown".action.focus-column-right = [ ];
+  "Mod+Shift+WheelScrollUp".action.focus-column-left = [ ];
+  "Mod+CTRL+Shift+WheelScrollDown".action.move-column-right = [ ];
+  "Mod+CTRL+Shift+WheelScrollUp".action.move-column-left = [ ];
   
   "Mod+1".action.focus-workspace = 1;
   "Mod+2".action.focus-workspace = 2;
@@ -129,21 +131,21 @@
   "Mod+CTRL+8".action.move-column-to-workspace = 8;
   "Mod+CTRL+9".action.move-column-to-workspace = 9;
   
-  "Mod+TAB".action.focus-workspace-previous = true;
+  "Mod+TAB".action.focus-workspace-previous = [ ];
 
   #  Layout Controls 
-  "Mod+CTRL+F".action.expand-column-to-available-width = true;
-  "Mod+C".action.center-column = true;
-  "Mod+CTRL+C".action.center-visible-columns = true;
+  "Mod+CTRL+F".action.expand-column-to-available-width = [ ];
+  "Mod+C".action.center-column = [ ];
+  "Mod+CTRL+C".action.center-visible-columns = [ ];
   "Mod+Minus".action.set-column-width = "-10%";
   "Mod+Equal".action.set-column-width = "+10%";
   "Mod+Shift+Minus".action.set-window-height = "-10%";
   "Mod+Shift+Equal".action.set-window-height = "+10%";
   
   #  Modes 
-  "Mod+T".action.toggle-window-floating = true;
-  "Mod+F".action.fullscreen-window = true;
-  "Mod+W".action.toggle-column-tabbed-display = true;
+  "Mod+T".action.toggle-window-floating = [ ];
+  "Mod+F".action.fullscreen-window = [ ];
+  "Mod+W".action.toggle-column-tabbed-display = [ ];
   
   #  Screenshots 
   "PRINT".action.spawn = [ (lib.getExe scripts.screenshot) ];
@@ -151,15 +153,15 @@
   # Use this when a fullscreen app blocks your keybinds.
   # It disables any active keyboard shortcut inhibitor, restoring control.
   "Mod+ESCAPE" = {
-    action.toggle-keyboard-shortcuts-inhibit = true;
+    action.toggle-keyboard-shortcuts-inhibit = [ ];
     allow-inhibiting = false;
   };
 
   # Exit / Power 
-  "CTRL+ALT+Delete".action.quit = true;
-  "Mod+Shift+P".action.power-off-monitors = true;
+  "CTRL+ALT+Delete".action.quit = [ ];
+  "Mod+Shift+P".action.power-off-monitors = [ ];
   "Mod+O" = {
-    action.toggle-overview = true;
+    action.toggle-overview = [ ];
     repeat = false;
   };
 }
