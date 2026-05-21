@@ -1,5 +1,6 @@
 { pkgs, ... }:
   let gamescope-wrapped = pkgs.writeShellScriptBin "gamescope" ''
+    LD_PRELOAD=${pkgs.graphene-hardened-malloc}/lib/libhardened_malloc-light.so \
     exec ${pkgs.nixgl.nixVulkanIntel}/bin/nixVulkanIntel ${pkgs.gamescope}/bin/gamescope "$@"
   '';
   steam = pkgs.steam.override {

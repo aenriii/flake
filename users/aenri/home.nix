@@ -22,6 +22,7 @@
     pkgs.signal-desktop
     pkgs.legcord
     pkgs.paru
+    pkgs.graphene-hardened-malloc
   ];
   home.file = {
     ".face".source = ./assets/.face.png;
