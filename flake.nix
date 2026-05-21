@@ -37,7 +37,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-
     helium = {
       url = "github:schembriaiden/helium-browser-nix-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -48,9 +47,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixgl = {
+      url = "github:nix-community/nixGL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs @ { self, nixpkgs, home-manager, lanzaboote, impermanence, sops-nix, disko, niri-flake, noctalia, helium, claude-code, ... }:
+  outputs = inputs @ { self, nixpkgs, home-manager, lanzaboote, impermanence, sops-nix, disko, niri-flake, noctalia, helium, claude-code, nixgl, ... }:
     let
       system = "x86_64-linux";
       output-systems = [ "x86_64-linux" "aarch64-linux" ];
@@ -147,6 +150,7 @@
               claude-code.overlays.default
               self.overlays.default
               niri-flake.overlays.niri
+              nixgl.overlay
             ];
           }
           niri-flake.homeModules.config

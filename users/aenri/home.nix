@@ -1,4 +1,4 @@
-{ inputs, config, pkgs, lib, ... }:
+{ inputs, config, pkgs, lib, nixgl, ... }:
 {
   home.username = "aenri";
   home.homeDirectory = "/home/aenri";
@@ -14,6 +14,7 @@
     ./home/dev.nix
     ./home/zed.nix
     ./home/niri.nix
+    ./home/gaming/steam.nix 
   ];
   home.packages = [
     pkgs.zed-editor
