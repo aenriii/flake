@@ -4,32 +4,79 @@ version = "0.1.0"
 edition = "2024"
 lib = "src/lib.rs"
 
-[dependencies]
-anyhow = "1.0.102"
-argon2 = "0.5.3"
-chacha20 = { version = "0.10.0", features = ["rng", "zeroize"] }
-clap = { version = "4.6.1", features = ["derive"] }
-dialoguer = "0.12.0"
-either = "1.15.0"
-fido2-rs = "0.5.0"
-hkdf = "0.13.0"
-indicatif = "0.18.4"
-libc = "0.2.186"
-libcryptsetup-rs = { version = "0.15.1", features = ["mutex"] }
-nix = { version = "0.31.2", features = ["user"] }
-rand = "0.10.1"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
-sha2 = "0.11.0"
-sharks = "0.5.0"
-tempfile = "3.27.0"
-thiserror = "2.0.18"
-tokio = { version = "1.52.1", features = ["full"] }
-tss-esapi = "7.7.0"
-zerocopy = "0.8.48"
-zeroize = "1.8.2"
-
 [[bin]]
 name = "pyria-sudo"
 path = "src/bin/sudo.rs"
+required-features = ["core"]
+
+[[bin]]
+name = "pyria"
+path = "src/bin/pyria.rs"
 dependencies.pyria = { path = "../" }
+required-features = ["core", "bin", "interactive", "crypto"]
+
+
+[dependencies]
+anyhow = { version = "1.0.102", optional = true }
+argon2 = { version = "0.5.3", optional = true }
+chacha20 = { version = "0.10.0", features = ["rng", "zeroize"], optional = true }
+clap = { version = "4.6.1", features = ["derive"], optional = true }
+dialoguer = { version = "0.12.0", optional = true }
+either = { version = "1.15.0", optional = true }
+fido2-rs = { version = "0.5.0", optional = true}
+hkdf = { version = "0.13.0", optional = true }
+indicatif = { version = "0.18.4", optional = true }
+libc = { version = "0.2.186", optional = true }
+libcryptsetup-rs = { version = "0.15.1", features = ["mutex"], optional = true }
+nix = { version = "0.31.2", features = ["user"], optional = true }
+rand = { version = "0.10.1", optional = true}
+serde = { version = "1.0.228", features = ["derive"], optional = true }
+serde_json = { version = "1.0.149", optional = true }
+sha2 = { version = "0.11.0", optional = true }
+sharks = { version = "0.5.0", optional = true }
+tempfile = { version = "3.27.0", optional = true }
+thiserror = { version = "2.0.18", optional = true }
+tokio = { version = "1.52.1", features = ["full"], optional = true }
+tss-esapi = { version = "7.7.0", optional = true }
+zerocopy = { version = "0.8.48", optional = true }
+zeroize = { version = "1.8.2", optional = true }
+
+[features]
+default = ["core"]
+core = [
+  "dep:anyhow",
+  "dep:either",
+  "dep:libc",
+  "dep:nix",
+  "dep:rand",
+  "dep:serde",
+  "dep:serde_json",
+  "dep:tempfile",
+  "dep:thiserror",
+  "dep:tokio",
+]
+bin = [
+  "core",
+  "interactive"
+]
+interactive = [
+  "dep:dialoguer",
+  "dep:indicatif",
+  "dep:clap",
+
+]
+crypto = [
+  "dep:argon2",
+  "dep:chacha20",
+  "dep:fido2-rs",
+  "dep:hkdf",
+  "dep:libcryptsetup-rs",
+  "dep:tss-esapi",
+  "dep:sharks",
+  "dep:zerocopy",
+  "dep:zeroize",
+  "dep:sha2",
+]
+
+
+

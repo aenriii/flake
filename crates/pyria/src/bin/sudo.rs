@@ -6,14 +6,17 @@ fn main() -> anyhow::Result<()> {
     run(args)
 }
 
-pub fn run(args: Vec<String>) -> anyhow::Result<()> {
-    let run0_args = translate(args)?;
+pub fn run(mut args: Vec<String>) -> anyhow::Result<()> {
+  if args[0].contains("sudo") {
+    let _ = args.remove(0);
+  }
+  let run0_args = translate(args)?;
 
-    let err = std::process::Command::new("run0")
-        .args(&run0_args)
-        .exec();
+  let err = std::process::Command::new("run0")
+    .args(&run0_args)
+    .exec();
 
-    Err(anyhow::anyhow!("failed to exec run0: {err}"))
+  Err(anyhow::anyhow!("failed to exec run0: {err}"))
 }
 
 fn translate(args: Vec<String>) -> anyhow::Result<Vec<String>> {

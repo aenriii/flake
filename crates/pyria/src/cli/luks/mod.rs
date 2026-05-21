@@ -24,9 +24,6 @@ pub enum LuksCommand {
     /// path to a detached LUKS2 header file
     #[arg(short = 'H', long)]
     luks_header: Option<String>,
-    /// internal filesystem: btrfs (default) or ext4
-    #[arg(short = 'f', long, default_value = "btrfs")]
-    filesystem: String,
     /// hardware factors for hybrid enrollment (e.g. "fido2")
     #[arg(long)]
     hw: Option<String>,
