@@ -13,7 +13,7 @@
     ./security/usbguard.nix
     # security
     ./security/sops.nix
-    ./security/apparmor/hardened.nix
+    ./security/apparmor.nix
     ./security/hardened.nix
     ./security/fido2.nix
   ];
