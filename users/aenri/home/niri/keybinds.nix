@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, scripts, ... }:
 {
   "Mod+Return".action.spawn = "alacritty";
   "Mod+D".action.spawn = config.noctalia.ipc-sh + ["launcher" "toggle"];
@@ -146,7 +146,7 @@
   "Mod+W".action.toggle-column-tabbed-display = true;
   
   #  Screenshots 
-  "PRINT".action.spawn = "$HOME/.local/bin/screenshot";
+  "PRINT".action.spawn = [ (lib.getExe scripts.screenshot) ];
   #  Emergency Escape Key 
   # Use this when a fullscreen app blocks your keybinds.
   # It disables any active keyboard shortcut inhibitor, restoring control.

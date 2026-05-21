@@ -1,6 +1,7 @@
 { pkgs, lib, ... }:
 
 {
+  home.packages = with pkgs; [ zsh any-nix-shell fastfetch ];
   programs.zsh = {
     enable = true;
     initContent = ''
@@ -11,6 +12,7 @@
       done
       ${lib.readFile ./zsh/functions.zsh}
       ${lib.readFile ./zsh/prompt.zsh}
+      ${pkgs.any-nix-shell}/bin/any-nix-shell zsh --info-right | source /dev/stdin
     '';
     setOptions = [ "PROMPT_SUBST" ];
     plugins = [
@@ -38,9 +40,6 @@
       plugins = [
         "git"
       ];
-    };
-    shellAliases = {
-      testflake = "echo hello from your flake!";
     };
   };
 }
