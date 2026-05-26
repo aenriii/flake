@@ -72,12 +72,14 @@
           pyria = pkgs.callPackage ./nix/packages/pyria.nix { };
           pyria-sudo = pkgs.callPackage ./nix/packages/pyria-sudo.nix { };
           apparmor-d-nix-patch = pkgs.callPackage ./nix/packages/apparmor-d-nix-patch.nix { inherit inputs; };
+          p-stream-desktop = pkgs.callPackage ./nix/packages/p-stream-desktop.nix { inherit pkgs; };
         });
 
       overlays.default = final: prev: {
         pyria = final.callPackage ./nix/packages/pyria.nix { };
         pyria-sudo = final.callPackage ./nix/packages/pyria-sudo.nix { };
         apparmor-d-nix-patch = final.callPackage ./nix/packages/apparmor-d-nix-patch.nix { };
+        p-stream-desktop = final.callPackage ./nix/packages/p-stream-desktop.nix { };
       };
       homeModules = {
         pyria-sudo = ./nix/home-modules/pyria-sudo.nix;

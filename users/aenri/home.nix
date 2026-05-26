@@ -32,9 +32,10 @@ in {
     legcord
     paru
     graphene-hardened-malloc
-    (gl vesktop)
+    (gl equibop)
     (gl obsidian)
     tailscale
+    p-stream-desktop
   ];
   home.file = {
     ".face".source = ./assets/.face.png;
@@ -45,4 +46,5 @@ in {
     aliasSudo = true;
     shadowSudo = true;
   };
+
 }
