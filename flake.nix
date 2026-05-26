@@ -51,9 +51,14 @@
       url = "github:nix-community/nixGL";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    zen-browser = {
+          url = "github:youwen5/zen-browser-flake";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+
   };
 
-  outputs = inputs @ { self, nixpkgs, home-manager, lanzaboote, impermanence, sops-nix, disko, niri-flake, noctalia, helium, claude-code, nixgl, ... }:
+  outputs = inputs @ { self, nixpkgs, home-manager, lanzaboote, impermanence, sops-nix, disko, niri-flake, noctalia, helium, claude-code, nixgl, zen-browser, ... }:
     let
       system = "x86_64-linux";
       output-systems = [ "x86_64-linux" "aarch64-linux" ];

@@ -6,6 +6,7 @@
     nil
     claude-code
     rustup
+    devenv
   ];
   programs.neovim = {
     enable = true;

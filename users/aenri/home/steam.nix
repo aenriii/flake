@@ -18,9 +18,13 @@
       gamescope-wrapped
     ];
   };
-  steam-wrapped = pkgs.writeShellScriptBin "steam" ''
+  steam-bin-wrapped = pkgs.writeShellScriptBin "steam" ''
     QT_QPA_PLATFORM=xcb exec ${pkgs.nixgl.nixGLIntel}/bin/nixGLIntel ${steam}/bin/steam "$@"
   '';
+  steam-wrapped = pkgs.symlinkJoin {
+    name = "steam";
+    paths = [ steam-bin-wrapped steam ];
+  };
 in
 {
   home.packages = [

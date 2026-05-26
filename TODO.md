@@ -1,24 +1,53 @@
 - [ ] `pyria` binary
   - [ ] `pyria setup` commands
-  - [ ] `pyria nix upgrade`
-- [ ] gaming specialization hardening
-  - [ ] investigate: what *does* proton-battleye need to run?
-    - [x] `debugfs`? (can we `lockdown=confidentiality` then allow access to `debugfs` with apparmor?)
-      - not needed, `lockdown=confidentiality` disables debugfs and proton-battleye
-      works fine
-    - [ ] `userns` (known needed, can we disable it via sysctls and enable it for specific processes with apparmor?)
-    - [ ] `ptrace` (likely needed, how can we restrict this?)
-  - [ ] steam / proton / battleye apparmor profiles
-  - [ ] move to `hardened` kernel config if possible, else `common`
-- [ ] evaluate if anything lower than `hardened` kernel config is needed for day-to-day use.
-  - [ ] deprecate/remove `loose` kernel config options
-  - [ ] investigate: does the UX benefit of `common` kernel config outweigh the security benefits of `hardened`?
-    - [ ] identify which hardened settings have noticable ux/perf impact
-      - `oops=panic`, could make computers randomly panic with flaky hardware/drivers?
-      - `ptrace_scope=3`, makes debugging impossible. maybe we can use apparmor for this?
-      - `spec_store_bypass_disable=on` - 5-15% perf impact on memory-heavy workloads
-    - [ ] identify which hardened settings are effectively free
-      - `slab_debug=ZP` should be next to free on modern hardware
-        - [ ] investigate: does `slab_debug=ZP` interact badly with `hardened_malloc` since both are doing allocator-level hardening?
-      - `page_alloc.shuffle=1`, no real-world perf impact, basically transparent ux-wise
-      - `lockdown=confidentiality`, no real world perf impact, no real ux impact
+    - [x] `pyria setup init` - initializes the pyria setup process
+    - [ ] `pyria setup configure` - configures a host flake for use with pyria
+    - [ ] `pyria setup disks` - partitions and formats disks for use with pyria
+    - [ ] `pyria setup boot` - configures the bootloader for use with pyria
+    - [ ] `pyria setup user` - allows generation of user accounts for use with pyria
+    - [ ] `pyria setup hardware` - wraps `nixos-generate-config` for use with pyria
+    - [ ] `pyria setup install` - wraps `nixos-install`
+  - [ ] `pyria luks` commands
+    - [ ] `pyria luks enroll` - manages keyslot enrollment for luks2 devices, enabling hybrid enrollment and nuke passphrases
+    - [ ] `pyria luks unenroll` - removes keyslot enrollment for luks2 devices
+    - [ ] `pyria luks unlock` - unlocks a mounted luks2 device (similar to `luksResume`) **deferred**
+    - [ ] `pyria luks lock` - locks a mounted luks2 device (similar to `luksSuspend`) **deferred**
+    - [ ] `pyria luks open` - opens an unmounted luks2 device 
+    - [ ] `pyria luks close` - closes a mounted luks2 device
+    - [ ] `pyria luks nuke` - nukes a luks2 device, wiping all keyslots and sending secure erase commands if applicable
+  - [ ] `pyria sudo` command - converts `sudo` args to `run0` args
+  - [ ] `pyria vault` commands - vault management, now with hybrid enroll support!
+    - [ ] `pyria vault create` - creates a new vault
+    - [ ] `pyria vault destroy` - destroys an existing vault
+    - [ ] `pyria vault open` - opens an existing vault
+    - [ ] `pyria vault close` - closes an open vault
+    - [ ] `pyria vault list` - lists all vaults
+    - [ ] `pyria vault configure` - configures an existing vault (e.g. resizing, mountpoint)
+    - [ ] `pyria vault rekey` - rekeys an existing vault
+  - [ ] `pyria nix` commands - wraps some useful nix commands in pyria-specific magic (such as managing enrollment)
+    - [ ] `pyria nix upgrade` - pulls the latest pyria flake from upstream
+    - [ ] `pyria nix update` - updates the nix package cache
+    - [ ] `pyria nix switch` - wrapper around `nixos-rebuild switch` 
+    - [ ] `pyria nix pkg` commands - offering a familiar interface for non-nix users managing a nixos system
+      - [ ] `pyria nix pkg add [--user]` - adds a package to either the system or user profile
+      - [ ] `pyria nix pkg remove [--user]` - removes a package from either the system or user profile
+      - [ ] `pyria nix pkg list` - lists all packages
+      - [ ] `pyria nix pkg search` - searches for a package
+    - [ ] `pyria nix rollback` - wrapper around `nixos-rebuild rollback` with ux improvements
+    - [ ] `pyria nix generations` - lists all nix generations
+    - [ ] `pyria nix gc` - wrapper around `nix-collect-garbage` with sensible defaults
+    - [ ] `pyria nix maintenance` - performs system maintenance (e.g. `nix gc`) and checks for updates in the
+      background, notifying the user if updates are available. this is mostly just a systemd service hook.
+- [ ] `pyria` documentation
+  - [x] `pyria` cli basic usage / readme
+  - [-] `pyria` advanced documentation
+    - [x] what is hybrid enrollment?
+    - [ ] what are we doing for argon2id? why?
+    - [ ] what is a vault?
+    - [ ] why are we wrapping nix commands?
+    - [ ] cli in-depth dive (what does that do?)
+      - [ ] `pyria sudo` command docs
+      - [ ] `pyria nix` command docs
+      - [ ] `pyria vault` command docs
+      - [ ] `pyria luks` command docs
+      - [ ] `pyria setup` command docs
