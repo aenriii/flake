@@ -117,7 +117,7 @@
   "browser.uitour.enabled" = false;
   "browser.uitour.url" = "";
   "devtools.debugger.remote-enabled" = false;
-  "permissions.default.shortcuts" = 2;
+  "permissions.default.shortcuts" = 1;
   "permissions.manager.defaultsUrl" = "";
   "network.IDN_show_punycode" = true;
   "pdfjs.disabled" = false;
